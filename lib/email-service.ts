@@ -7,74 +7,7 @@ export interface EmailOptions {
   from?: string
 }
 
-export class EmailService {
-  private static instance: EmailService
-  private fromEmail = process.env.FROM_EMAIL || process.env.COMPANY_EMAIL || "infobyfarato@gmail.com"
-  private transporter: nodemailer.Transporter | null = null
-
-  static getInstance(): EmailService {
-    if (!EmailService.instance) {
-      EmailService.instance = new EmailService()
-    }
-    return EmailService.instance
-  }
-
-  private async createTestTransporter() {
-    try {
-      // Create test account if needed
-      const testAccount = await nodemailer.createTestAccount()
-      
-      return nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass
-        }
-      })
-    } catch (error) {
-      console.error('Failed to create test transporter:', error)
-      return null
-    }
-  }
-
-  private getSmtpTransporter() {
-    if (!this.transporter) {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'localhost',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        logger: true,
-        debug: true
-      })
-    }
-    return this.transporter
-  }
-
-  private getGmailTransporter() {
-    if (!this.transporter) {
-      const authPassword = process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASSWORD
-      
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GMAIL_USER || process.env.COMPANY_EMAIL,
-          pass: authPassword
-        },
-        secure: true,
-        port: 465,
-        logger: true,
-        debug: true
-      })
-    }
-    return this.transporter
-  }
-}
+// ...existing code...
 
 export class EmailService {
   private static instance: EmailService
