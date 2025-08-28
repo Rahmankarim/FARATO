@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Email Setup - Farato Fashion</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+      }
+      .step {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+      .api-key-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: monospace;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+      .warning {
+        border-left-color: #ffc107;
+        background: #fff3cd;
+      }
+      .error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+      .code {
+        background: #f1f1f1;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        margin: 10px 0;
+      }
+      a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📧 Real Email Setup</h1>
+      <p>Set up real email delivery for your password reset functionality.</p>
+
+      <div class="step">
+        <h3>🚀 Quick Setup with Resend (Recommended)</h3>
+        <ol>
+          <li>
+            <strong>Sign up at</strong>
+            <a href="https://resend.com/signup" target="_blank"
+              >https://resend.com/signup</a
+            >
+          </li>
+          <li><strong>Get your API key</strong> from Dashboard → API Keys</li>
+          <li><strong>Enter your API key below:</strong></li>
+        </ol>
+
+        <input
+          type="text"
+          id="resendApiKey"
+          class="api-key-input"
+          placeholder="re_your_api_key_here"
+        />
+        <br />
+        <button onclick="setupResend()">🔧 Setup Resend Email</button>
+        <button onclick="testEmail()">📧 Test Email Sending</button>
+      </div>
+
+      <div class="step warning">
+        <h3>⚠️ Current Status</h3>
+        <p id="currentStatus">
+          Email service is configured but needs a valid API key to send real
+          emails.
+        </p>
+      </div>
+
+      <div class="step">
+        <h3>📋 Manual Setup Instructions</h3>
+        <p>
+          If you prefer to set up manually, update your
+          <code>.env.local</code> file:
+        </p>
+        <div class="code">
+          EMAIL_PROVIDER=resend<br />
+          RESEND_API_KEY=re_your_actual_api_key_here<br />
+          FROM_EMAIL=onboarding@resend.dev<br />
+          COMPANY_EMAIL=infobyfarato@gmail.com
+        </div>
+      </div>
+
+      <div class="step">
+        <h3>🔄 Alternative: Gmail App Password</h3>
+        <ol>
+          <li>Enable 2-Factor Authentication on Gmail</li>
+          <li>
+            Generate App Password: Google Account → Security → App passwords
+          </li>
+          <li>Use the 16-character app password in settings</li>
+        </ol>
+        <button onclick="setupGmail()">🔧 Setup Gmail Instead</button>
+      </div>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      function setupResend() {
+        const apiKey = document.getElementById("resendApiKey").value.trim();
+
+        if (!apiKey) {
+          showResult("❌ Please enter your Resend API key", "error");
+          return;
+        }
+
+        if (!apiKey.startsWith("re_")) {
+          showResult(
+            '❌ Invalid API key format. Resend keys start with "re_"',
+            "error"
+          );
+          return;
+        }
+
+        // In a real app, this would make an API call to update the environment
+        showResult(
+          `
+                ✅ API Key received! 
+                <br><br>
+                <strong>Next steps:</strong>
+                <ol>
+                    <li>Copy this to your .env.local file:</li>
+                </ol>
+                <div class="code">
+                    EMAIL_PROVIDER=resend<br>
+                    RESEND_API_KEY=${apiKey}<br>
+                    FROM_EMAIL=onboarding@resend.dev<br>
+                    COMPANY_EMAIL=infobyfarato@gmail.com
+                </div>
+                <ol start="2">
+                    <li>Restart your development server</li>
+                    <li>Test the password reset functionality</li>
+                </ol>
+            `,
+          "success"
+        );
+      }
+
+      function setupGmail() {
+        showResult(
+          `
+                📧 Gmail Setup Instructions:
+                <ol>
+                    <li>Go to your Google Account settings</li>
+                    <li>Enable 2-Factor Authentication</li>
+                    <li>Go to Security → App passwords</li>
+                    <li>Generate an app password for "Mail"</li>
+                    <li>Update your .env.local:</li>
+                </ol>
+                <div class="code">
+                    EMAIL_PROVIDER=gmail<br>
+                    SMTP_HOST=smtp.gmail.com<br>
+                    SMTP_PORT=587<br>
+                    SMTP_SECURE=false<br>
+                    SMTP_USER=infobyfarato@gmail.com<br>
+                    SMTP_PASS=your_16_character_app_password<br>
+                    FROM_EMAIL=infobyfarato@gmail.com
+                </div>
+            `,
+          "warning"
+        );
+      }
+
+      async function testEmail() {
+        try {
+          showResult("⏳ Testing email functionality...", "warning");
+
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "rahmankarim2468@gmail.com" }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showResult(
+              `
+                        ✅ Email test completed!
+                        <br><br>
+                        <strong>Response:</strong> ${data.message}
+                        <br>
+                        <strong>Check your email inbox!</strong>
+                        ${data.resetLink ? `<br><br><strong>Reset Link:</strong> <a href="${data.resetLink}" target="_blank">Click here</a>` : ""}
+                    `,
+              "success"
+            );
+          } else {
+            showResult(`❌ Email test failed: ${data.error}`, "error");
+          }
+        } catch (error) {
+          showResult(`❌ Test failed: ${error.message}`, "error");
+        }
+      }
+
+      function showResult(html, type) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `<div class="step ${type}">${html}</div>`;
+      }
+
+      // Check current status
+      window.onload = function () {
+        // This would normally check the current email configuration
+        document.getElementById("currentStatus").innerHTML =
+          "Email service is ready. Just need a valid Resend API key to send real emails!";
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Login Redirect - Farato Fashion</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+      }
+      .step {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+      .info {
+        border-left-color: #17a2b8;
+        background: #d1ecf1;
+      }
+      .warning {
+        border-left-color: #ffc107;
+        background: #fff3cd;
+      }
+      .highlight {
+        background: #ffffcc;
+        padding: 3px 6px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Test Login Redirect Functionality</h1>
+      <p>
+        Verify that successful login automatically redirects to the home page.
+      </p>
+
+      <div class="step success">
+        <h3>✅ Login Redirect Features Added</h3>
+        <ul>
+          <li>
+            ✅ <strong>Automatic redirect:</strong> After successful login, user
+            is redirected to home page
+          </li>
+          <li>
+            ✅ <strong>1-second delay:</strong> Shows success toast before
+            redirect
+          </li>
+          <li>
+            ✅ <strong>NextAuth integration:</strong> Works with both credential
+            and social login
+          </li>
+          <li>
+            ✅ <strong>Password reset flow:</strong> Shows success message when
+            redirected from password reset
+          </li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3>🧪 Test Scenarios</h3>
+
+        <h4>Scenario 1: Regular Login</h4>
+        <ol>
+          <li>Go to login page</li>
+          <li>Enter valid credentials</li>
+          <li>Click "Sign In"</li>
+          <li>
+            <span class="highlight"
+              >Expected: Success toast + redirect to home page</span
+            >
+          </li>
+        </ol>
+        <button onclick="window.open('/login', '_blank')">
+          🔗 Test Regular Login
+        </button>
+
+        <h4>Scenario 2: Social Login</h4>
+        <ol>
+          <li>Go to login page</li>
+          <li>Click "Continue with Google" or "Continue with Facebook"</li>
+          <li>Complete OAuth flow</li>
+          <li>
+            <span class="highlight"
+              >Expected: Automatic redirect to home page</span
+            >
+          </li>
+        </ol>
+
+        <h4>Scenario 3: After Password Reset</h4>
+        <ol>
+          <li>Complete password reset flow</li>
+          <li>Get redirected to login page</li>
+          <li>
+            <span class="highlight"
+              >Expected: Success message about password reset</span
+            >
+          </li>
+          <li>Login with new password</li>
+          <li>
+            <span class="highlight">Expected: Redirect to home page</span>
+          </li>
+        </ol>
+        <button onclick="window.open('/forgot-password', '_blank')">
+          🔗 Test Password Reset Flow
+        </button>
+      </div>
+
+      <div class="step info">
+        <h3>📋 Technical Implementation</h3>
+        <p><strong>Login Page Updates:</strong></p>
+        <ul>
+          <li>Added <code>useRouter</code> for programmatic navigation</li>
+          <li>Added <code>router.push('/')</code> after successful login</li>
+          <li>
+            Added <code>useSearchParams</code> to detect password reset success
+          </li>
+          <li>Added success toast display for password reset completion</li>
+        </ul>
+
+        <p><strong>NextAuth Configuration:</strong></p>
+        <ul>
+          <li>Added redirect callback for secure URL handling</li>
+          <li>
+            Social login already configured with <code>callbackUrl: '/'</code>
+          </li>
+          <li>Maintains security while providing smooth UX</li>
+        </ul>
+
+        <p><strong>Password Reset Integration:</strong></p>
+        <ul>
+          <li>Reduced redirect delay from 3 seconds to 2 seconds</li>
+          <li>Added query parameter for success messaging</li>
+          <li>Improved user feedback throughout the flow</li>
+        </ul>
+      </div>
+
+      <div class="step warning">
+        <h3>⚠️ Test Instructions</h3>
+        <ol>
+          <li>
+            <strong>Create Test Account:</strong> Register with a test email if
+            you haven't already
+          </li>
+          <li>
+            <strong>Test Regular Login:</strong> Use credentials to login and
+            verify redirect
+          </li>
+          <li>
+            <strong>Test Password Reset:</strong> Go through complete password
+            reset flow
+          </li>
+          <li>
+            <strong>Verify Home Page:</strong> Ensure user lands on correct home
+            page
+          </li>
+          <li>
+            <strong>Check User State:</strong> Verify user is properly
+            authenticated after redirect
+          </li>
+        </ol>
+      </div>
+
+      <div class="step">
+        <h3>🎯 Quick Actions</h3>
+        <button onclick="window.open('/', '_blank')">🏠 Open Home Page</button>
+        <button onclick="window.open('/login', '_blank')">
+          🔑 Open Login Page
+        </button>
+        <button onclick="window.open('/register', '_blank')">
+          📝 Open Register Page
+        </button>
+        <button onclick="window.open('/forgot-password', '_blank')">
+          🔐 Open Forgot Password
+        </button>
+        <button onclick="testLoginFlow()">🧪 Test Complete Login Flow</button>
+      </div>
+
+      <div id="testResult"></div>
+    </div>
+
+    <script>
+      function testLoginFlow() {
+        const resultDiv = document.getElementById("testResult");
+
+        resultDiv.innerHTML = `
+                <div class="step info">
+                    <h3>🧪 Login Flow Test Instructions</h3>
+                    <p><strong>Follow these steps to test the complete login flow:</strong></p>
+                    <ol>
+                        <li>
+                            <strong>Step 1:</strong> 
+                            <a href="/login" target="_blank" style="color: #007bff;">Open Login Page</a>
+                        </li>
+                        <li>
+                            <strong>Step 2:</strong> Enter your test credentials:
+                            <ul>
+                                <li>Email: rahmankarim2468@gmail.com (or your test email)</li>
+                                <li>Password: Your current password</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Step 3:</strong> Click "Sign In"
+                        </li>
+                        <li>
+                            <strong>Expected Result:</strong>
+                            <ul>
+                                <li>✅ "Welcome back!" toast appears</li>
+                                <li>✅ After 1 second, automatic redirect to home page</li>
+                                <li>✅ User is logged in and can access protected features</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    
+                    <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                        <strong>💡 Pro Tip:</strong> If login fails, try the password reset flow first to set a known password, then test login with the new password.
+                    </div>
+                </div>
+            `;
+      }
+    </script>
+  </body>
+</html>

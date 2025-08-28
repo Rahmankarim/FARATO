@@ -1,0 +1,322 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Debug Email Delivery - Farato Fashion</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 20px;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+      }
+      .step {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .debug {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        font-size: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .success {
+        border-left-color: #28a745;
+      }
+      .error {
+        border-left-color: #dc3545;
+      }
+      .warning {
+        border-left-color: #ffc107;
+      }
+      .email-input {
+        width: 300px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin: 10px;
+      }
+      .tabs {
+        margin: 20px 0;
+      }
+      .tab {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #e9ecef;
+        border: 1px solid #ddd;
+        cursor: pointer;
+      }
+      .tab.active {
+        background: #007bff;
+        color: white;
+      }
+      .tab-content {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ddd;
+      }
+      .tab-content.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🐛 Email Delivery Debug</h1>
+      <p>Let's debug why emails aren't being delivered to your inbox.</p>
+
+      <div class="step">
+        <h3>📧 Test Email Address</h3>
+        <input
+          type="email"
+          id="testEmail"
+          class="email-input"
+          value="rahmankarim2468@gmail.com"
+          placeholder="Enter email address"
+        />
+        <br />
+        <button onclick="debugEmailDelivery()">🐛 Debug Email Delivery</button>
+        <button onclick="clearLogs()">🗑️ Clear Logs</button>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('response')">API Response</div>
+        <div class="tab" onclick="showTab('logs')">Server Logs</div>
+        <div class="tab" onclick="showTab('troubleshoot')">Troubleshooting</div>
+      </div>
+
+      <div id="response-tab" class="tab-content active">
+        <div id="apiResponse"></div>
+      </div>
+
+      <div id="logs-tab" class="tab-content">
+        <div class="step">
+          <h4>📊 Expected Server Logs</h4>
+          <p>Check your VS Code terminal for these log messages:</p>
+          <div class="debug">
+            🔧 EmailService initialized 📧 API Key present: YES 📧 From email:
+            onboarding@resend.dev 🔐 Password reset email requested 📧 Target
+            email: rahmankarim2468@gmail.com 📧 Email Service Debug: 📧
+            Provider: resend 📧 Attempting to send via Resend... 📧 Resend API
+            Response: {...}
+          </div>
+        </div>
+      </div>
+
+      <div id="troubleshoot-tab" class="tab-content">
+        <div class="step warning">
+          <h4>🔍 Common Issues & Solutions</h4>
+          <ol>
+            <li>
+              <strong>Invalid API Key:</strong>
+              <ul>
+                <li>Check if API key starts with 're_'</li>
+                <li>Verify API key is active in Resend dashboard</li>
+                <li>Make sure no extra spaces in .env.local</li>
+              </ul>
+            </li>
+            <li>
+              <strong>From Email Issues:</strong>
+              <ul>
+                <li>Use 'onboarding@resend.dev' for testing</li>
+                <li>Custom domains need verification in Resend</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Email Delivery:</strong>
+              <ul>
+                <li>Check spam/junk folder</li>
+                <li>Gmail might delay delivery (check after 5-10 minutes)</li>
+                <li>Some email providers block automated emails</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Database Issues:</strong>
+              <ul>
+                <li>Email must exist in MongoDB User collection</li>
+                <li>Check if user is registered first</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function showTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+
+        // Show selected tab
+        document.getElementById(tabName + "-tab").classList.add("active");
+        event.target.classList.add("active");
+      }
+
+      async function debugEmailDelivery() {
+        const email = document.getElementById("testEmail").value.trim();
+        const responseDiv = document.getElementById("apiResponse");
+
+        if (!email) {
+          showResponse("❌ Please enter a valid email address", "error");
+          return;
+        }
+
+        showResponse(
+          "⏳ Debugging email delivery... Check VS Code terminal for detailed logs.",
+          "warning"
+        );
+
+        try {
+          console.log("🐛 Starting email debug test...");
+
+          const startTime = Date.now();
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const endTime = Date.now();
+
+          const data = await response.json();
+
+          console.log("📊 Debug Results:", {
+            status: response.status,
+            responseTime: endTime - startTime + "ms",
+            data: data,
+          });
+
+          const debugInfo = {
+            timestamp: new Date().toLocaleString(),
+            email: email,
+            status: response.status,
+            responseTime: endTime - startTime + "ms",
+            success: response.ok,
+            message: data.message,
+            error: data.error,
+            resetLink: data.resetLink,
+            emailInfo: data.emailInfo,
+            devNote: data.devNote,
+          };
+
+          if (response.ok) {
+            showResponse(
+              `
+                        <div class="step success">
+                            <h3>✅ API Response Successful</h3>
+                            <div class="debug">${JSON.stringify(debugInfo, null, 2)}</div>
+                            
+                            ${
+                              data.resetLink
+                                ? `
+                                <div style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 5px;">
+                                    <strong>🔗 Reset Link Generated:</strong><br>
+                                    <a href="${data.resetLink}" target="_blank" style="word-break: break-all; color: #007bff;">
+                                        ${data.resetLink}
+                                    </a>
+                                </div>
+                            `
+                                : ""
+                            }
+                            
+                            <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 5px;">
+                                <strong>🔍 Next Steps:</strong><br>
+                                1. Check your VS Code terminal for detailed Resend logs<br>
+                                2. Look for "Resend API Response" in the logs<br>
+                                3. Check your email inbox (including spam)<br>
+                                4. If no email, check the troubleshooting tab
+                            </div>
+                        </div>
+                    `,
+              "success"
+            );
+          } else {
+            showResponse(
+              `
+                        <div class="step error">
+                            <h3>❌ API Error</h3>
+                            <div class="debug">${JSON.stringify(debugInfo, null, 2)}</div>
+                            
+                            <div style="margin-top: 15px; padding: 15px; background: #f8d7da; border-radius: 5px;">
+                                <strong>🔍 Possible Issues:</strong><br>
+                                • Email not registered in database<br>
+                                • Invalid Resend API key<br>
+                                • Server configuration error<br>
+                                • Network connectivity issues
+                            </div>
+                        </div>
+                    `,
+              "error"
+            );
+          }
+        } catch (error) {
+          console.error("🐛 Debug test failed:", error);
+          showResponse(
+            `
+                    <div class="step error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Possible causes:</strong></p>
+                        <ul>
+                            <li>Development server not running</li>
+                            <li>Network connectivity issues</li>
+                            <li>API endpoint not available</li>
+                        </ul>
+                    </div>
+                `,
+            "error"
+          );
+        }
+      }
+
+      function showResponse(html, type = "") {
+        const responseDiv = document.getElementById("apiResponse");
+        responseDiv.innerHTML = html;
+      }
+
+      function clearLogs() {
+        document.getElementById("apiResponse").innerHTML =
+          "<p>Logs cleared. Run debug test to see new results.</p>";
+        console.clear();
+      }
+
+      // Auto-show instructions
+      window.onload = function () {
+        showResponse(`
+                <div class="step">
+                    <h3>🚀 Ready to Debug</h3>
+                    <p>Click "Debug Email Delivery" to test email sending with detailed logging.</p>
+                    <p><strong>Make sure to check your VS Code terminal</strong> for detailed Resend API logs.</p>
+                </div>
+            `);
+      };
+    </script>
+  </body>
+</html>

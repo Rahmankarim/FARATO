@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Resend Email Testing - Farato Fashion</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+      }
+      .step {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+      .error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+      .warning {
+        border-left-color: #ffc107;
+        background: #fff3cd;
+      }
+      .info {
+        border-left-color: #17a2b8;
+        background: #d1ecf1;
+      }
+      .code {
+        background: #f1f1f1;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        margin: 10px 0;
+      }
+      .highlight {
+        background: #ffffcc;
+        padding: 3px 6px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📧 Resend Email Testing Configuration</h1>
+      <p>
+        Your Resend account has restrictions that prevent sending to any email
+        address. Here's how to fix it:
+      </p>
+
+      <div class="step warning">
+        <h3>⚠️ Current Issue</h3>
+        <p>
+          <strong>Resend Error:</strong> "You can only send testing emails to
+          your own email address (infobyfarato@gmail.com)"
+        </p>
+        <p>
+          This is a <strong>Resend free account limitation</strong> - not a
+          problem with our code!
+        </p>
+      </div>
+
+      <div class="step info">
+        <h3>✅ Quick Fix Applied</h3>
+        <p>
+          I've configured the system to send test emails to
+          <span class="highlight">infobyfarato@gmail.com</span> instead of
+          rahmankarim2468@gmail.com
+        </p>
+        <div class="code">TEST_EMAIL_OVERRIDE=infobyfarato@gmail.com</div>
+      </div>
+
+      <div class="step">
+        <h3>🧪 Test Email Sending Now</h3>
+        <p>Click the button below to test password reset email delivery:</p>
+        <button onclick="testPasswordReset()">
+          📧 Send Test Password Reset Email
+        </button>
+        <div id="testResult"></div>
+      </div>
+
+      <div class="step">
+        <h3>🔧 Permanent Solutions</h3>
+
+        <h4>Option 1: Verify Your Domain (Recommended)</h4>
+        <ol>
+          <li>
+            Go to
+            <a href="https://resend.com/domains" target="_blank"
+              >resend.com/domains</a
+            >
+          </li>
+          <li>Add your domain (e.g., farato.com)</li>
+          <li>Add the DNS records to your domain</li>
+          <li>Use emails like noreply@farato.com</li>
+          <li>Send to any email address</li>
+        </ol>
+
+        <h4>Option 2: Use Gmail SMTP Instead</h4>
+        <ol>
+          <li>Enable 2-Factor Authentication on Gmail</li>
+          <li>Generate App Password</li>
+          <li>Update environment variables</li>
+          <li>Works with any recipient email</li>
+        </ol>
+        <button onclick="setupGmailSMTP()">🔧 Switch to Gmail SMTP</button>
+
+        <h4>Option 3: Alternative Email Services</h4>
+        <ul>
+          <li><strong>SendGrid:</strong> More generous free tier</li>
+          <li><strong>Mailgun:</strong> Good for developers</li>
+          <li><strong>Amazon SES:</strong> Very reliable</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3>📋 Testing Instructions</h3>
+        <p><strong>For now, to test password recovery:</strong></p>
+        <ol>
+          <li>Click "Send Test Password Reset Email" above</li>
+          <li>
+            Check <strong>infobyfarato@gmail.com</strong> inbox (not
+            rahmankarim2468@gmail.com)
+          </li>
+          <li>Click the reset link in that email</li>
+          <li>Set a new password</li>
+          <li>Test login with the new password</li>
+        </ol>
+      </div>
+
+      <div class="step success" id="currentConfig" style="display: none">
+        <h3>✅ Current Configuration</h3>
+        <div class="code" id="configDetails"></div>
+      </div>
+
+      <div id="gmailSetup" class="step warning" style="display: none">
+        <h3>📧 Gmail SMTP Setup</h3>
+        <p>
+          To switch to Gmail SMTP (which allows sending to any email address):
+        </p>
+        <div class="code">
+          # Update your .env.local file: EMAIL_PROVIDER=gmail
+          SMTP_HOST=smtp.gmail.com SMTP_PORT=587 SMTP_SECURE=false
+          SMTP_USER=infobyfarato@gmail.com
+          SMTP_PASS=your_16_character_app_password
+          FROM_EMAIL=infobyfarato@gmail.com
+        </div>
+        <button onclick="applyGmailConfig()">
+          ✅ Apply Gmail Configuration
+        </button>
+      </div>
+    </div>
+
+    <script>
+      async function testPasswordReset() {
+        const resultDiv = document.getElementById("testResult");
+        resultDiv.innerHTML =
+          '<div class="warning" style="margin-top: 15px; padding: 15px;">⏳ Testing password reset email...</div>';
+
+        try {
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "rahmankarim2468@gmail.com" }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            resultDiv.innerHTML = `
+                        <div class="success" style="margin-top: 15px; padding: 15px;">
+                            <h4>✅ Success! Email Sent</h4>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                            
+                            ${
+                              data.resetLink
+                                ? `
+                                <div style="background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                                    <strong>🔗 Direct Reset Link:</strong><br>
+                                    <a href="${data.resetLink}" target="_blank" style="word-break: break-all; color: #007bff;">
+                                        ${data.resetLink}
+                                    </a>
+                                    <br><br>
+                                    <button onclick="window.open('${data.resetLink}', '_blank')" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                                        🔓 Open Reset Page
+                                    </button>
+                                </div>
+                            `
+                                : ""
+                            }
+                            
+                            ${data.devNote ? `<p><em>${data.devNote}</em></p>` : ""}
+                            
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                                <strong>📬 Next Steps:</strong><br>
+                                1. Check <strong>infobyfarato@gmail.com</strong> inbox<br>
+                                2. Look for "Reset Your Password - Farato Fashion" email<br>
+                                3. Click the reset link in that email<br>
+                                4. Set your new password<br>
+                                5. Test login with new password
+                            </div>
+                        </div>
+                    `;
+          } else {
+            resultDiv.innerHTML = `
+                        <div class="error" style="margin-top: 15px; padding: 15px;">
+                            <h4>❌ Email Send Failed</h4>
+                            <p><strong>Error:</strong> ${data.error}</p>
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <div class="error" style="margin-top: 15px; padding: 15px;">
+                        <h4>❌ Network Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+        }
+      }
+
+      function setupGmailSMTP() {
+        document.getElementById("gmailSetup").style.display = "block";
+        document
+          .getElementById("gmailSetup")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function applyGmailConfig() {
+        alert(
+          "To apply Gmail configuration:\n\n1. Enable 2-Factor Authentication on Gmail\n2. Generate App Password in Google Account settings\n3. Update your .env.local file with the configuration shown above\n4. Restart your development server\n\nThen you can send emails to any address!"
+        );
+      }
+
+      // Show current config
+      window.onload = function () {
+        const configDiv = document.getElementById("currentConfig");
+        const detailsDiv = document.getElementById("configDetails");
+
+        detailsDiv.innerHTML = `EMAIL_PROVIDER=resend
+RESEND_API_KEY=re_Vd5PVoVg_HMaEaCkHNmKSt1G1tkcvdqYc
+FROM_EMAIL=onboarding@resend.dev
+TEST_EMAIL_OVERRIDE=infobyfarato@gmail.com
+
+Status: ✅ Configured for testing with Resend limitations`;
+
+        configDiv.style.display = "block";
+      };
+    </script>
+  </body>
+</html>

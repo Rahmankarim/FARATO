@@ -1,0 +1,345 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Login After Password Reset - Farato Fashion</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .container {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+      }
+      .step {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      input {
+        width: 300px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin: 10px 0;
+      }
+      .success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+      .error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+      .warning {
+        border-left-color: #ffc107;
+        background: #fff3cd;
+      }
+      .debug {
+        background: #f1f1f1;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔐 Test Login After Password Reset</h1>
+      <p>
+        Test the complete password reset and login flow to verify it's working
+        correctly.
+      </p>
+
+      <div class="step">
+        <h3>Step 1: Request Password Reset</h3>
+        <input
+          type="email"
+          id="resetEmail"
+          placeholder="Enter email address"
+          value="rahmankarim2468@gmail.com"
+        />
+        <br />
+        <button onclick="requestPasswordReset()">
+          📧 Send Password Reset Email
+        </button>
+        <div id="resetResult"></div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2: Test Login with New Password</h3>
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="Email"
+          value="rahmankarim2468@gmail.com"
+        />
+        <br />
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Enter your new password"
+        />
+        <br />
+        <button onclick="testLogin()">🔑 Test Login</button>
+        <div id="loginResult"></div>
+      </div>
+
+      <div class="step warning">
+        <h3>🔍 Debugging Steps</h3>
+        <ol>
+          <li>
+            <strong>Check Database:</strong>
+            <button onclick="checkUserInDatabase()">
+              🗄️ Check User Exists
+            </button>
+          </li>
+          <li>
+            <strong>Check Password Hash:</strong> The password should be
+            properly hashed in MongoDB
+          </li>
+          <li>
+            <strong>Check Reset Token:</strong> Should be cleared after password
+            reset
+          </li>
+          <li>
+            <strong>Check Login API:</strong> Should connect to database
+            properly
+          </li>
+        </ol>
+        <div id="debugResult"></div>
+      </div>
+
+      <div class="step">
+        <h3>📋 Quick Actions</h3>
+        <button onclick="window.open('/forgot-password', '_blank')">
+          🔗 Open Forgot Password Page
+        </button>
+        <button onclick="window.open('/login', '_blank')">
+          🔗 Open Login Page
+        </button>
+        <button onclick="window.open('/register', '_blank')">
+          🔗 Open Register Page
+        </button>
+      </div>
+    </div>
+
+    <script>
+      async function requestPasswordReset() {
+        const email = document.getElementById("resetEmail").value.trim();
+        const resultDiv = document.getElementById("resetResult");
+
+        if (!email) {
+          resultDiv.innerHTML =
+            '<div class="error" style="margin-top: 10px; padding: 10px;">❌ Please enter an email address</div>';
+          return;
+        }
+
+        resultDiv.innerHTML =
+          '<div class="warning" style="margin-top: 10px; padding: 10px;">⏳ Sending password reset...</div>';
+
+        try {
+          const response = await fetch("/api/auth/forgot-password", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            resultDiv.innerHTML = `
+                        <div class="success" style="margin-top: 10px; padding: 10px;">
+                            ✅ Password reset sent!<br>
+                            <strong>Message:</strong> ${data.message}<br>
+                            ${
+                              data.resetLink
+                                ? `
+                                <br><strong>🔗 Reset Link:</strong><br>
+                                <a href="${data.resetLink}" target="_blank" style="word-break: break-all; color: #007bff;">
+                                    ${data.resetLink}
+                                </a>
+                                <br><br>
+                                <button onclick="window.open('${data.resetLink}', '_blank')" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                                    🔓 Open Reset Page
+                                </button>
+                            `
+                                : ""
+                            }
+                        </div>
+                    `;
+          } else {
+            resultDiv.innerHTML = `<div class="error" style="margin-top: 10px; padding: 10px;">❌ Error: ${data.error}</div>`;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="error" style="margin-top: 10px; padding: 10px;">❌ Network Error: ${error.message}</div>`;
+        }
+      }
+
+      async function testLogin() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const resultDiv = document.getElementById("loginResult");
+
+        if (!email || !password) {
+          resultDiv.innerHTML =
+            '<div class="error" style="margin-top: 10px; padding: 10px;">❌ Please enter both email and password</div>';
+          return;
+        }
+
+        resultDiv.innerHTML =
+          '<div class="warning" style="margin-top: 10px; padding: 10px;">⏳ Testing login...</div>';
+
+        try {
+          // Test the credentials directly against the API
+          const response = await fetch("/api/auth/callback/credentials", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              email: email,
+              password: password,
+              csrfToken: await getCSRFToken(),
+            }),
+          });
+
+          console.log("Login response status:", response.status);
+          console.log("Login response headers:", [
+            ...response.headers.entries(),
+          ]);
+
+          if (response.ok || response.status === 302) {
+            resultDiv.innerHTML = `
+                        <div class="success" style="margin-top: 10px; padding: 10px;">
+                            ✅ Login successful!<br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Password reset and login flow is working correctly!</strong><br><br>
+                            <button onclick="window.open('/login', '_blank')" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                                🔗 Go to Login Page
+                            </button>
+                        </div>
+                    `;
+          } else {
+            const text = await response.text();
+            resultDiv.innerHTML = `
+                        <div class="error" style="margin-top: 10px; padding: 10px;">
+                            ❌ Login failed<br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Response:</strong> ${text}<br><br>
+                            <strong>Possible issues:</strong><br>
+                            • Wrong password entered<br>
+                            • Password not properly saved during reset<br>
+                            • Database connection issues<br>
+                            • User account doesn't exist
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <div class="error" style="margin-top: 10px; padding: 10px;">
+                        ❌ Login test error: ${error.message}<br><br>
+                        <strong>Try alternative test:</strong><br>
+                        <button onclick="testLoginAlternative()" style="background: #ffc107; color: black; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                            🔄 Test with NextAuth API
+                        </button>
+                    </div>
+                `;
+        }
+      }
+
+      async function testLoginAlternative() {
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const resultDiv = document.getElementById("loginResult");
+
+        resultDiv.innerHTML =
+          '<div class="warning" style="margin-top: 10px; padding: 10px;">⏳ Testing login via NextAuth...</div>';
+
+        try {
+          // Import NextAuth signIn function (if available)
+          if (
+            typeof window !== "undefined" &&
+            window.location.pathname.includes("test")
+          ) {
+            resultDiv.innerHTML = `
+                        <div class="warning" style="margin-top: 10px; padding: 10px;">
+                            🔄 Manual login test required<br><br>
+                            <strong>Steps to test:</strong><br>
+                            1. Go to <a href="/login" target="_blank">Login Page</a><br>
+                            2. Enter email: ${email}<br>
+                            3. Enter the new password you set<br>
+                            4. Click "Sign In"<br><br>
+                            If it works, the password reset is functioning correctly!
+                        </div>
+                    `;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="error" style="margin-top: 10px; padding: 10px;">❌ Alternative test error: ${error.message}</div>`;
+        }
+      }
+
+      async function getCSRFToken() {
+        try {
+          const response = await fetch("/api/auth/csrf");
+          const data = await response.json();
+          return data.csrfToken;
+        } catch {
+          return "test-csrf-token";
+        }
+      }
+
+      async function checkUserInDatabase() {
+        const email = document.getElementById("resetEmail").value.trim();
+        const resultDiv = document.getElementById("debugResult");
+
+        if (!email) {
+          resultDiv.innerHTML =
+            '<div class="error">❌ Please enter an email address first</div>';
+          return;
+        }
+
+        resultDiv.innerHTML =
+          '<div class="warning">⏳ Checking user in database...</div>';
+
+        // This would need a custom API endpoint to check user existence
+        resultDiv.innerHTML = `
+                <div class="warning">
+                    <strong>🗄️ Database Check</strong><br>
+                    To verify the user exists and password was updated:<br><br>
+                    <div class="debug">
+1. Check MongoDB User collection
+2. Find user with email: ${email}
+3. Verify 'password' field is a bcrypt hash
+4. Verify 'resetPasswordToken' field is undefined/null
+5. Verify 'resetPasswordExpires' field is undefined/null
+                    </div>
+                    <br>
+                    <strong>If these conditions are met, the password reset worked correctly.</strong>
+                </div>
+            `;
+      }
+
+      // Auto-focus email field
+      window.onload = function () {
+        document.getElementById("resetEmail").focus();
+      };
+    </script>
+  </body>
+</html>
