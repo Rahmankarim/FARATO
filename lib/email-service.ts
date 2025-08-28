@@ -1,7 +1,5 @@
 import nodemailer from "nodemailer"
 
-import nodemailer from "nodemailer"
-
 export interface EmailOptions {
   to: string | string[]
   subject: string
