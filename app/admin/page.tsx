@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { AdminSidebar } from "@/components/admin-sidebar"
+import AdminSidebar from "@/components/admin-sidebar"
 import { AdminHeader } from "@/components/admin-header"
-import { AdminDashboard } from "@/components/admin-dashboard"
+import AdminDashboard from "@/components/admin-dashboard"
 import { AdminProducts } from "@/components/admin-products"
 import { AdminOrders } from "@/components/admin-orders"
 import { AdminUsers } from "@/components/admin-users"
@@ -15,7 +15,7 @@ export default function AdminPage() {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <AdminDashboard />
+  return <AdminDashboard section={activeTab} />
       case "products":
         return <AdminProducts />
       case "orders":
@@ -25,14 +25,14 @@ export default function AdminPage() {
       case "analytics":
         return <AdminAnalytics />
       default:
-        return <AdminDashboard />
+  return <AdminDashboard section={activeTab} />
     }
   }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="flex">
-        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+  <AdminSidebar />
         <div className="flex-1">
           <AdminHeader />
           <main className="p-6">{renderContent()}</main>
